@@ -137,14 +137,18 @@ storyForm.onsubmit = (e) => {
     e.preventDefault();
     
     const formData = new FormData(storyForm);
+    
+    // Generate unique ID by finding max existing ID and incrementing
+    const maxId = stories.length > 0 ? Math.max(...stories.map(s => s.id)) : 0;
+    
     const newStory = {
-        id: Date.now(),
+        id: maxId + 1,
         title: formData.get('title'),
         location: formData.get('location'),
         latitude: parseFloat(formData.get('latitude')),
         longitude: parseFloat(formData.get('longitude')),
         content: formData.get('content'),
-        tags: formData.get('tags').split(',').map(tag => tag.trim()).filter(tag => tag),
+        tags: (formData.get('tags') || '').split(',').map(tag => tag.trim()).filter(tag => tag),
         author: formData.get('author'),
         date: new Date().toISOString().split('T')[0]
     };
@@ -154,13 +158,16 @@ storyForm.onsubmit = (e) => {
     stories.push(newStory);
     saveLocalStories();
     
-    // Clear the map and re-add all markers
-    map.eachLayer(layer => {
-        if (layer instanceof L.Marker) {
-            map.removeLayer(layer);
-        }
+    // Add only the new marker to the map (more efficient)
+    const marker = L.marker([newStory.latitude, newStory.longitude]).addTo(map);
+    marker.bindPopup(`
+        <h3>${newStory.title}</h3>
+        <p><strong>${newStory.location}</strong></p>
+        <p>${newStory.content.substring(0, 100)}...</p>
+    `);
+    marker.on('click', () => {
+        showStoryDetail(newStory);
     });
-    addMarkersToMap();
     
     // Refresh the stories list
     displayStories();
