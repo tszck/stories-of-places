@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stories of Places</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>Stories of Places</h1>
+            <button id="writeStoryBtn" class="write-story-btn">Write a Story</button>
+        </div>
+    </header>
+
+    <main>
+        <div id="map"></div>
+        
+        <div id="storiesContainer" class="stories-container">
+            <h2>Recent Stories</h2>
+            <div id="storiesList" class="stories-list"></div>
+        </div>
+    </main>
+
+    <div id="storyModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Write a Story</h2>
+            <form id="storyForm">
+                <div class="form-group">
+                    <label for="storyTitle">Title:</label>
+                    <input type="text" id="storyTitle" name="title" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="storyLocation">Location Name:</label>
+                    <input type="text" id="storyLocation" name="location" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="storyLatitude">Latitude:</label>
+                    <input type="number" id="storyLatitude" name="latitude" step="any" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="storyLongitude">Longitude:</label>
+                    <input type="number" id="storyLongitude" name="longitude" step="any" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="storyTags">Tags (comma separated):</label>
+                    <input type="text" id="storyTags" name="tags" placeholder="e.g., adventure, history, nature">
+                </div>
+                
+                <div class="form-group">
+                    <label for="storyContent">Story:</label>
+                    <textarea id="storyContent" name="content" rows="10" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="storyAuthor">Author:</label>
+                    <input type="text" id="storyAuthor" name="author" required>
+                </div>
+                
+                <button type="submit" class="submit-btn">Submit Story</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="storyDetailModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="storyDetail"></div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
