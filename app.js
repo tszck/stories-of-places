@@ -7,6 +7,13 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18,
 }).addTo(map);
 
+// Helper function to escape HTML and prevent XSS
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 // Story data structure (simulating a database-free approach)
 let stories = [];
 let repositoryStories = [];
@@ -48,9 +55,9 @@ function addMarkersToMap() {
         const marker = L.marker([story.latitude, story.longitude]).addTo(map);
         
         marker.bindPopup(`
-            <h3>${story.title}</h3>
-            <p><strong>${story.location}</strong></p>
-            <p>${story.content.substring(0, 100)}...</p>
+            <h3>${escapeHtml(story.title)}</h3>
+            <p><strong>${escapeHtml(story.location)}</strong></p>
+            <p>${escapeHtml(story.content.substring(0, 100))}...</p>
         `);
         
         marker.on('click', () => {
@@ -79,13 +86,13 @@ function displayStories() {
         const excerpt = story.content.substring(0, 150) + (story.content.length > 150 ? '...' : '');
         
         storyCard.innerHTML = `
-            <h3>${story.title}</h3>
-            <div class="location">📍 ${story.location}</div>
-            <div class="excerpt">${excerpt}</div>
+            <h3>${escapeHtml(story.title)}</h3>
+            <div class="location">📍 ${escapeHtml(story.location)}</div>
+            <div class="excerpt">${escapeHtml(excerpt)}</div>
             <div class="tags">
-                ${story.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                ${story.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
             </div>
-            <div class="meta">By ${story.author} on ${story.date}</div>
+            <div class="meta">By ${escapeHtml(story.author)} on ${escapeHtml(story.date)}</div>
         `;
         
         storiesList.appendChild(storyCard);
@@ -98,13 +105,13 @@ function showStoryDetail(story) {
     const storyDetail = document.getElementById('storyDetail');
     
     storyDetail.innerHTML = `
-        <h2>${story.title}</h2>
-        <div class="detail-location">📍 ${story.location}</div>
+        <h2>${escapeHtml(story.title)}</h2>
+        <div class="detail-location">📍 ${escapeHtml(story.location)}</div>
         <div class="detail-tags">
-            ${story.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+            ${story.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
         </div>
-        <div class="detail-content">${story.content}</div>
-        <div class="detail-meta">Written by ${story.author} on ${story.date}</div>
+        <div class="detail-content">${escapeHtml(story.content)}</div>
+        <div class="detail-meta">Written by ${escapeHtml(story.author)} on ${escapeHtml(story.date)}</div>
     `;
     
     modal.style.display = 'block';
@@ -177,9 +184,9 @@ storyForm.onsubmit = (e) => {
     // Add only the new marker to the map (more efficient)
     const marker = L.marker([newStory.latitude, newStory.longitude]).addTo(map);
     marker.bindPopup(`
-        <h3>${newStory.title}</h3>
-        <p><strong>${newStory.location}</strong></p>
-        <p>${newStory.content.substring(0, 100)}...</p>
+        <h3>${escapeHtml(newStory.title)}</h3>
+        <p><strong>${escapeHtml(newStory.location)}</strong></p>
+        <p>${escapeHtml(newStory.content.substring(0, 100))}...</p>
     `);
     marker.on('click', () => {
         showStoryDetail(newStory);
