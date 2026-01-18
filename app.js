@@ -64,8 +64,12 @@ function displayStories() {
     const storiesList = document.getElementById('storiesList');
     storiesList.innerHTML = '';
     
-    // Sort stories by date (newest first)
-    const sortedStories = [...stories].sort((a, b) => new Date(b.date) - new Date(a.date));
+    // Sort stories by date (newest first), with fallback for invalid dates
+    const sortedStories = [...stories].sort((a, b) => {
+        const dateA = a.date ? new Date(a.date) : new Date(0);
+        const dateB = b.date ? new Date(b.date) : new Date(0);
+        return dateB - dateA;
+    });
     
     sortedStories.forEach(story => {
         const storyCard = document.createElement('div');
@@ -138,15 +142,27 @@ storyForm.onsubmit = (e) => {
     
     const formData = new FormData(storyForm);
     
+    // Validate coordinates
+    const latitude = parseFloat(formData.get('latitude'));
+    const longitude = parseFloat(formData.get('longitude'));
+    
+    if (isNaN(latitude) || isNaN(longitude) || 
+        latitude < -90 || latitude > 90 || 
+        longitude < -180 || longitude > 180) {
+        alert('Please enter valid coordinates.\nLatitude must be between -90 and 90.\nLongitude must be between -180 and 180.');
+        return;
+    }
+    
     // Generate unique ID by finding max existing ID and incrementing
-    const maxId = stories.length > 0 ? Math.max(...stories.map(s => s.id)) : 0;
+    const validIds = stories.filter(s => typeof s.id === 'number' && !isNaN(s.id)).map(s => s.id);
+    const maxId = validIds.length > 0 ? Math.max(...validIds) : 0;
     
     const newStory = {
         id: maxId + 1,
         title: formData.get('title'),
         location: formData.get('location'),
-        latitude: parseFloat(formData.get('latitude')),
-        longitude: parseFloat(formData.get('longitude')),
+        latitude: latitude,
+        longitude: longitude,
         content: formData.get('content'),
         tags: (formData.get('tags') || '').split(',').map(tag => tag.trim()).filter(tag => tag),
         author: formData.get('author'),
