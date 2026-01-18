@@ -1,3 +1,9 @@
+// Configuration - Update these values for your repository
+const REPO_CONFIG = {
+    owner: 'tszck',
+    name: 'stories-of-places'
+};
+
 // Initialize the map (check if Leaflet is available)
 let map;
 if (typeof L !== 'undefined') {
@@ -172,9 +178,21 @@ window.onclick = (event) => {
 
 // Helper function to create GitHub issue URL with pre-filled data
 function createGitHubIssueURL(storyData) {
-    // Get repository info from the current page URL or use a default
-    const repoOwner = 'tszck';  // Repository owner
-    const repoName = 'stories-of-places';  // Repository name
+    // Use repository configuration
+    const repoOwner = REPO_CONFIG.owner;
+    const repoName = REPO_CONFIG.name;
+    
+    // Create a clean story object for JSON formatting
+    const storyJSON = {
+        title: storyData.title,
+        location: storyData.location,
+        latitude: storyData.latitude,
+        longitude: storyData.longitude,
+        author: storyData.author,
+        tags: storyData.tagsArray,
+        content: storyData.content,
+        date: storyData.date
+    };
     
     // Create the issue body with story data
     const issueBody = `## Story Details
@@ -201,16 +219,7 @@ ${storyData.content}
 <!-- This format is used for automated processing -->
 
 \`\`\`json
-{
-  "title": "${storyData.title.replace(/"/g, '\\"')}",
-  "location": "${storyData.location.replace(/"/g, '\\"')}",
-  "latitude": ${storyData.latitude},
-  "longitude": ${storyData.longitude},
-  "author": "${storyData.author.replace(/"/g, '\\"')}",
-  "tags": [${storyData.tagsArray.map(t => `"${t.replace(/"/g, '\\"')}"`).join(', ')}],
-  "content": "${storyData.content.replace(/"/g, '\\"').replace(/\n/g, '\\n')}",
-  "date": "${storyData.date}"
-}
+${JSON.stringify(storyJSON, null, 2)}
 \`\`\`
 `;
     
@@ -329,15 +338,17 @@ storyForm.onsubmit = (e) => {
     // Close modal
     storyModal.style.display = 'none';
     
-    // Show confirmation and redirect
-    const confirmed = confirm(
-        'Your story will be submitted for review via GitHub Issues.\n\n' +
-        'You will be redirected to GitHub to create an issue. The form will be pre-filled with your story details.\n\n' +
-        'An administrator will review your submission and add it to the website if approved.\n\n' +
-        'Click OK to continue to GitHub.'
+    // Inform user and redirect to GitHub
+    const userConsent = confirm(
+        '✓ Your story is ready for submission!\n\n' +
+        '→ You will be redirected to GitHub to complete your submission.\n' +
+        '→ The form will be pre-filled with your story details.\n' +
+        '→ You\'ll need a GitHub account (free to create).\n' +
+        '→ An administrator will review and publish if approved.\n\n' +
+        'Click OK to open GitHub and submit your story.'
     );
     
-    if (confirmed) {
+    if (userConsent) {
         // Open GitHub issue creation page in a new window
         window.open(issueURL, '_blank');
         
