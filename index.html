@@ -28,6 +28,7 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Write a Story</h2>
+            <p class="submission-info">Submit your story for review. An administrator will review and publish it if approved.</p>
             <form id="storyForm">
                 <div class="form-group">
                     <label for="storyTitle">Title:</label>
@@ -42,6 +43,7 @@
                 <div class="form-group">
                     <label for="storyLatitude">Latitude:</label>
                     <input type="number" id="storyLatitude" name="latitude" step="any" required>
+                    <small class="form-hint">Tip: Right-click on Google Maps to get coordinates</small>
                 </div>
                 
                 <div class="form-group">
@@ -64,7 +66,14 @@
                     <input type="text" id="storyAuthor" name="author" required>
                 </div>
                 
-                <button type="submit" class="submit-btn">Submit Story</button>
+                <div class="form-group">
+                    <label for="storyEmail">Email (optional, for notification):</label>
+                    <input type="email" id="storyEmail" name="email" placeholder="your@email.com">
+                    <small class="form-hint">We'll notify you when your story is reviewed</small>
+                </div>
+                
+                <button type="submit" class="submit-btn">Submit for Review</button>
+                <button type="button" id="previewLocalBtn" class="preview-btn">Preview Locally First</button>
             </form>
         </div>
     </div>

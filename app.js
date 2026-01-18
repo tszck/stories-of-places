@@ -1,11 +1,22 @@
-// Initialize the map
-const map = L.map('map').setView([20, 0], 2);
+// Configuration - Update these values for your repository
+const REPO_CONFIG = {
+    owner: 'tszck',
+    name: 'stories-of-places'
+};
 
-// Add tile layer (OpenStreetMap)
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    maxZoom: 18,
-}).addTo(map);
+// Initialize the map (check if Leaflet is available)
+let map;
+if (typeof L !== 'undefined') {
+    map = L.map('map').setView([20, 0], 2);
+    
+    // Add tile layer (OpenStreetMap)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 18,
+    }).addTo(map);
+} else {
+    console.warn('Leaflet library not loaded. Map features will be disabled.');
+}
 
 // Helper function to escape HTML and prevent XSS
 function escapeHtml(text) {
@@ -58,6 +69,8 @@ function saveLocalStories() {
 
 // Add markers to the map
 function addMarkersToMap() {
+    if (!map) return; // Skip if map is not initialized
+    
     stories.forEach(story => {
         // Validate coordinates before creating marker
         if (typeof story.latitude !== 'number' || typeof story.longitude !== 'number' ||
@@ -163,9 +176,63 @@ window.onclick = (event) => {
     }
 };
 
-// Handle form submission
-const storyForm = document.getElementById('storyForm');
-storyForm.onsubmit = (e) => {
+// Helper function to create GitHub issue URL with pre-filled data
+function createGitHubIssueURL(storyData) {
+    // Use repository configuration
+    const repoOwner = REPO_CONFIG.owner;
+    const repoName = REPO_CONFIG.name;
+    
+    // Create a clean story object for JSON formatting
+    const storyJSON = {
+        title: storyData.title,
+        location: storyData.location,
+        latitude: storyData.latitude,
+        longitude: storyData.longitude,
+        author: storyData.author,
+        tags: storyData.tagsArray,
+        content: storyData.content,
+        date: storyData.date
+    };
+    
+    // Create the issue body with story data
+    const issueBody = `## Story Details
+
+**Title:** ${storyData.title}
+
+**Location Name:** ${storyData.location}
+
+**Latitude:** ${storyData.latitude}
+
+**Longitude:** ${storyData.longitude}
+
+**Author:** ${storyData.author}
+
+${storyData.email ? `**Email:** ${storyData.email}\n\n` : ''}**Tags:** ${storyData.tags}
+
+**Story Content:**
+
+${storyData.content}
+
+---
+
+<!-- DO NOT EDIT BELOW THIS LINE -->
+<!-- This format is used for automated processing -->
+
+\`\`\`json
+${JSON.stringify(storyJSON, null, 2)}
+\`\`\`
+`;
+    
+    const issueTitle = encodeURIComponent(`Story Submission: ${storyData.title}`);
+    const issueBodyEncoded = encodeURIComponent(issueBody);
+    const labels = encodeURIComponent('story-submission,pending-review');
+    
+    return `https://github.com/${repoOwner}/${repoName}/issues/new?title=${issueTitle}&body=${issueBodyEncoded}&labels=${labels}`;
+}
+
+// Handle local preview button
+const previewLocalBtn = document.getElementById('previewLocalBtn');
+previewLocalBtn.onclick = (e) => {
     e.preventDefault();
     
     const formData = new FormData(storyForm);
@@ -203,18 +270,20 @@ storyForm.onsubmit = (e) => {
     saveLocalStories();
     
     // Add only the new marker to the map (more efficient)
-    const marker = L.marker([newStory.latitude, newStory.longitude]).addTo(map);
-    
-    const contentPreview = newStory.content.substring(0, 100) + (newStory.content.length > 100 ? '...' : '');
-    
-    marker.bindPopup(`
-        <h3>${escapeHtml(newStory.title)}</h3>
-        <p><strong>${escapeHtml(newStory.location)}</strong></p>
-        <p>${escapeHtml(contentPreview)}</p>
-    `);
-    marker.on('click', () => {
-        showStoryDetail(newStory);
-    });
+    if (map && typeof L !== 'undefined') {
+        const marker = L.marker([newStory.latitude, newStory.longitude]).addTo(map);
+        
+        const contentPreview = newStory.content.substring(0, 100) + (newStory.content.length > 100 ? '...' : '');
+        
+        marker.bindPopup(`
+            <h3>${escapeHtml(newStory.title)}</h3>
+            <p><strong>${escapeHtml(newStory.location)}</strong></p>
+            <p>${escapeHtml(contentPreview)}</p>
+        `);
+        marker.on('click', () => {
+            showStoryDetail(newStory);
+        });
+    }
     
     // Refresh the stories list
     displayStories();
@@ -224,25 +293,76 @@ storyForm.onsubmit = (e) => {
     storyForm.reset();
     
     // Pan to new story location
-    map.setView([newStory.latitude, newStory.longitude], 10);
+    if (map) {
+        map.setView([newStory.latitude, newStory.longitude], 10);
+    }
     
-    // Show instructions for making the story permanent
-    const instructions = `
-Story added successfully to your local browser!
+    alert('Story preview added locally! This is only visible in your browser.\n\nTo submit for publication, click "Write a Story" again and use "Submit for Review".');
+};
 
-To make this story visible to everyone:
-1. Copy the story data from the browser console
-2. Add it to the stories.json file in the repository
-3. Commit and push the changes to GitHub
-
-Check the browser console for the JSON data.
-    `;
+// Handle form submission - Submit to GitHub Issues for review
+const storyForm = document.getElementById('storyForm');
+storyForm.onsubmit = (e) => {
+    e.preventDefault();
     
-    console.log('=== NEW STORY JSON ===');
-    console.log(JSON.stringify(newStory, null, 2));
-    console.log('=== Add this to stories.json ===');
+    const formData = new FormData(storyForm);
     
-    alert(instructions);
+    // Validate coordinates
+    const latitude = parseFloat(formData.get('latitude'));
+    const longitude = parseFloat(formData.get('longitude'));
+    
+    if (isNaN(latitude) || isNaN(longitude) || 
+        latitude < -90 || latitude > 90 || 
+        longitude < -180 || longitude > 180) {
+        alert('Please enter valid coordinates.\nLatitude must be between -90 and 90.\nLongitude must be between -180 and 180.');
+        return;
+    }
+    
+    // Prepare story data for submission
+    const storyData = {
+        title: formData.get('title'),
+        location: formData.get('location'),
+        latitude: latitude,
+        longitude: longitude,
+        content: formData.get('content'),
+        tags: formData.get('tags') || '',
+        tagsArray: (formData.get('tags') || '').split(',').map(tag => tag.trim()).filter(tag => tag),
+        author: formData.get('author'),
+        email: formData.get('email') || '',
+        date: new Date().toISOString().split('T')[0]
+    };
+    
+    // Create GitHub issue URL with pre-filled data
+    const issueURL = createGitHubIssueURL(storyData);
+    
+    // Close modal
+    storyModal.style.display = 'none';
+    
+    // Inform user and redirect to GitHub
+    const userConsent = confirm(
+        '✓ Your story is ready for submission!\n\n' +
+        '→ You will be redirected to GitHub to complete your submission.\n' +
+        '→ The form will be pre-filled with your story details.\n' +
+        '→ You\'ll need a GitHub account (free to create).\n' +
+        '→ An administrator will review and publish if approved.\n\n' +
+        'Click OK to open GitHub and submit your story.'
+    );
+    
+    if (userConsent) {
+        // Open GitHub issue creation page in a new window
+        window.open(issueURL, '_blank');
+        
+        // Reset form
+        storyForm.reset();
+        
+        // Show thank you message
+        setTimeout(() => {
+            alert('Thank you for your submission!\n\nYour story has been sent for review. You will be notified once it\'s published.');
+        }, 500);
+    } else {
+        // User cancelled, show modal again
+        storyModal.style.display = 'block';
+    }
 };
 
 // Initialize the application
