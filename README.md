@@ -5,14 +5,14 @@ A simple, interactive website for sharing stories about places around the world.
 ## Features
 
 - **Interactive World Map**: Browse stories by location on an interactive map powered by Leaflet.js
-- **Write Stories**: Add your own stories with location, tags, and content
+- **Submit Stories**: Users can submit stories for review through a simple form
+- **Administrator Review**: All submissions are reviewed before publication
 - **No Database**: Stories are stored in a `stories.json` file in the repository
 - **Blog-Style**: New stories show up automatically when the JSON file is updated
 - **Responsive Design**: Works on desktop and mobile devices
 - **Tag System**: Organize stories with custom tags
-- **Dual Storage**: 
-  - Repository stories (in `stories.json`) are visible to everyone
-  - Local stories (in browser localStorage) are visible only to you until committed
+- **Preview Mode**: Preview your story locally before submitting
+- **GitHub-based**: Uses GitHub Issues for submission workflow
 
 ## How to Use
 
@@ -25,16 +25,35 @@ A simple, interactive website for sharing stories about places around the world.
 
 ### Writing a Story
 
-There are two ways to add stories:
+#### Submit for Review (Recommended)
 
-#### Option 1: Quick Add (Local Only)
 1. Click the "Write a Story" button in the header
-2. Fill in the form with your story details
-3. Submit to add your story locally (visible only in your browser)
-4. To make it permanent, copy the JSON from the browser console and add it to `stories.json`
+2. Fill in the form with your story details:
+   - Title and location
+   - Coordinates (tip: right-click on Google Maps)
+   - Tags to categorize your story
+   - Your story content
+   - Author name and optional email for notifications
+3. Click "Submit for Review"
+4. You'll be redirected to GitHub to create an issue with your story
+5. An administrator will review and publish your story if approved
+6. You'll be notified when your story is published
 
-#### Option 2: Permanent Add (Visible to Everyone)
-1. Edit the `stories.json` file in the repository
+**Note**: Submissions are reviewed to ensure quality and appropriateness. Most stories are approved within 1-2 days.
+
+#### Preview Locally First (Optional)
+
+1. Click the "Write a Story" button
+2. Fill in the form
+3. Click "Preview Locally First" to see how your story looks
+4. The story will appear on your map (visible only to you)
+5. When ready, submit for review using the steps above
+
+#### Direct Contribution (For Contributors)
+
+If you have direct access to the repository:
+
+1. Edit the `stories.json` file directly
 2. Add your story following the JSON format
 3. Commit and push your changes
 4. GitHub Pages will automatically update the website
@@ -80,13 +99,19 @@ We welcome story contributions! Please read [CONTRIBUTING.md](CONTRIBUTING.md) f
 
 ## How It Works
 
-1. **Stories Source**: All permanent stories are stored in `stories.json`
+1. **Stories Source**: All published stories are stored in `stories.json`
 2. **Loading**: When the page loads, it fetches stories from the JSON file
-3. **Local Additions**: The "Write a Story" form adds stories to your browser's localStorage
-4. **Display**: Both repository and local stories are displayed on the map and in the list
-5. **Making Stories Permanent**: Copy the JSON from browser console and add to `stories.json`
+3. **Story Submission**: Users submit stories via the form, which creates a GitHub Issue
+4. **Review Process**: Administrators review GitHub Issues labeled `story-submission`
+5. **Publication**: Approved stories are added to `stories.json` by administrators
+6. **Display**: All published stories appear on the map and in the list
+7. **Preview Mode**: Users can preview stories locally before submitting
 
-This approach combines the simplicity of a static site with the flexibility of user contributions through Git.
+This approach combines the simplicity of a static site with a review workflow through GitHub Issues.
+
+## For Administrators
+
+See [ADMIN_GUIDE.md](ADMIN_GUIDE.md) for detailed instructions on reviewing and approving story submissions.
 
 ## License
 

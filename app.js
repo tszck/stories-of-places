@@ -163,9 +163,60 @@ window.onclick = (event) => {
     }
 };
 
-// Handle form submission
-const storyForm = document.getElementById('storyForm');
-storyForm.onsubmit = (e) => {
+// Helper function to create GitHub issue URL with pre-filled data
+function createGitHubIssueURL(storyData) {
+    // Get repository info from the current page URL or use a default
+    const repoOwner = 'tszck';  // Repository owner
+    const repoName = 'stories-of-places';  // Repository name
+    
+    // Create the issue body with story data
+    const issueBody = `## Story Details
+
+**Title:** ${storyData.title}
+
+**Location Name:** ${storyData.location}
+
+**Latitude:** ${storyData.latitude}
+
+**Longitude:** ${storyData.longitude}
+
+**Author:** ${storyData.author}
+
+${storyData.email ? `**Email:** ${storyData.email}\n\n` : ''}**Tags:** ${storyData.tags}
+
+**Story Content:**
+
+${storyData.content}
+
+---
+
+<!-- DO NOT EDIT BELOW THIS LINE -->
+<!-- This format is used for automated processing -->
+
+\`\`\`json
+{
+  "title": "${storyData.title.replace(/"/g, '\\"')}",
+  "location": "${storyData.location.replace(/"/g, '\\"')}",
+  "latitude": ${storyData.latitude},
+  "longitude": ${storyData.longitude},
+  "author": "${storyData.author.replace(/"/g, '\\"')}",
+  "tags": [${storyData.tagsArray.map(t => `"${t.replace(/"/g, '\\"')}"`).join(', ')}],
+  "content": "${storyData.content.replace(/"/g, '\\"').replace(/\n/g, '\\n')}",
+  "date": "${storyData.date}"
+}
+\`\`\`
+`;
+    
+    const issueTitle = encodeURIComponent(`Story Submission: ${storyData.title}`);
+    const issueBodyEncoded = encodeURIComponent(issueBody);
+    const labels = encodeURIComponent('story-submission,pending-review');
+    
+    return `https://github.com/${repoOwner}/${repoName}/issues/new?title=${issueTitle}&body=${issueBodyEncoded}&labels=${labels}`;
+}
+
+// Handle local preview button
+const previewLocalBtn = document.getElementById('previewLocalBtn');
+previewLocalBtn.onclick = (e) => {
     e.preventDefault();
     
     const formData = new FormData(storyForm);
@@ -226,23 +277,70 @@ storyForm.onsubmit = (e) => {
     // Pan to new story location
     map.setView([newStory.latitude, newStory.longitude], 10);
     
-    // Show instructions for making the story permanent
-    const instructions = `
-Story added successfully to your local browser!
+    alert('Story preview added locally! This is only visible in your browser.\n\nTo submit for publication, click "Write a Story" again and use "Submit for Review".');
+};
 
-To make this story visible to everyone:
-1. Copy the story data from the browser console
-2. Add it to the stories.json file in the repository
-3. Commit and push the changes to GitHub
-
-Check the browser console for the JSON data.
-    `;
+// Handle form submission - Submit to GitHub Issues for review
+const storyForm = document.getElementById('storyForm');
+storyForm.onsubmit = (e) => {
+    e.preventDefault();
     
-    console.log('=== NEW STORY JSON ===');
-    console.log(JSON.stringify(newStory, null, 2));
-    console.log('=== Add this to stories.json ===');
+    const formData = new FormData(storyForm);
     
-    alert(instructions);
+    // Validate coordinates
+    const latitude = parseFloat(formData.get('latitude'));
+    const longitude = parseFloat(formData.get('longitude'));
+    
+    if (isNaN(latitude) || isNaN(longitude) || 
+        latitude < -90 || latitude > 90 || 
+        longitude < -180 || longitude > 180) {
+        alert('Please enter valid coordinates.\nLatitude must be between -90 and 90.\nLongitude must be between -180 and 180.');
+        return;
+    }
+    
+    // Prepare story data for submission
+    const storyData = {
+        title: formData.get('title'),
+        location: formData.get('location'),
+        latitude: latitude,
+        longitude: longitude,
+        content: formData.get('content'),
+        tags: formData.get('tags') || '',
+        tagsArray: (formData.get('tags') || '').split(',').map(tag => tag.trim()).filter(tag => tag),
+        author: formData.get('author'),
+        email: formData.get('email') || '',
+        date: new Date().toISOString().split('T')[0]
+    };
+    
+    // Create GitHub issue URL with pre-filled data
+    const issueURL = createGitHubIssueURL(storyData);
+    
+    // Close modal
+    storyModal.style.display = 'none';
+    
+    // Show confirmation and redirect
+    const confirmed = confirm(
+        'Your story will be submitted for review via GitHub Issues.\n\n' +
+        'You will be redirected to GitHub to create an issue. The form will be pre-filled with your story details.\n\n' +
+        'An administrator will review your submission and add it to the website if approved.\n\n' +
+        'Click OK to continue to GitHub.'
+    );
+    
+    if (confirmed) {
+        // Open GitHub issue creation page in a new window
+        window.open(issueURL, '_blank');
+        
+        // Reset form
+        storyForm.reset();
+        
+        // Show thank you message
+        setTimeout(() => {
+            alert('Thank you for your submission!\n\nYour story has been sent for review. You will be notified once it\'s published.');
+        }, 500);
+    } else {
+        // User cancelled, show modal again
+        storyModal.style.display = 'block';
+    }
 };
 
 // Initialize the application

@@ -209,10 +209,44 @@ main {
     cursor: pointer;
     transition: background-color 0.3s;
     width: 100%;
+    margin-bottom: 0.5rem;
 }
 
 .submit-btn:hover {
     background-color: #229954;
+}
+
+.preview-btn {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 100%;
+}
+
+.preview-btn:hover {
+    background-color: #2980b9;
+}
+
+.submission-info {
+    background-color: #e8f5e9;
+    padding: 1rem;
+    border-radius: 5px;
+    margin-bottom: 1.5rem;
+    color: #2c3e50;
+    border-left: 4px solid #27ae60;
+}
+
+.form-hint {
+    display: block;
+    color: #7f8c8d;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+    font-style: italic;
 }
 
 #storyDetail h2 {

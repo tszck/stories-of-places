@@ -1,18 +1,48 @@
 # How to Add Stories
 
-There are two ways to add stories to the Stories of Places website:
+There are three ways to add stories to the Stories of Places website:
 
-## Method 1: Via the Website (Temporary - Browser Only)
+## Method 1: Via Website Form (Recommended for All Users)
 
-1. Visit the website and click "Write a Story"
-2. Fill in the story details
-3. Click Submit
+This is the easiest method for most users. Stories submitted this way will be reviewed by administrators before publication.
 
-**Note:** Stories added this way are stored in your browser's localStorage and will only be visible to you. To make them visible to everyone, use Method 2.
+### Steps:
 
-## Method 2: Via Repository (Permanent - Visible to Everyone)
+1. **Visit the website** and click "Write a Story"
+2. **Fill in the story details**:
+   - Title: A clear, descriptive title for your story
+   - Location: The name of the place (e.g., "Grand Canyon, Arizona, USA")
+   - Latitude & Longitude: Coordinates for map placement
+     - Tip: Right-click on Google Maps and select the coordinates to copy them
+   - Tags: Comma-separated categories (e.g., "adventure, nature, hiking")
+   - Story: Your story content (be descriptive!)
+   - Author: Your name
+   - Email (optional): For notification when your story is published
+3. **Click "Submit for Review"**
+4. **Create GitHub Issue**: You'll be redirected to GitHub to create an issue
+   - The form will be pre-filled with your story data
+   - Click "Submit new issue" on GitHub
+   - You'll need a GitHub account (it's free!)
+5. **Wait for Review**: An administrator will review your submission (usually 1-2 days)
+6. **Get Notified**: You'll receive a notification when your story is published
 
-This is the recommended method for adding stories that should be visible to all visitors.
+### Optional: Preview First
+
+Before submitting, you can click "Preview Locally First" to see how your story will look on the map. This only saves it in your browser for testing.
+
+## Method 2: Via GitHub Issue (Manual)
+
+If you prefer, you can manually create a GitHub Issue:
+
+1. Go to the [Issues page](https://github.com/tszck/stories-of-places/issues)
+2. Click "New Issue"
+3. Select "Story Submission" template
+4. Fill in your story details
+5. Submit the issue
+
+## Method 3: Via Repository (For Contributors with Access)
+
+This method is for contributors who have direct push access to the repository.
 
 ### Steps:
 
@@ -54,6 +84,7 @@ This is the recommended method for adding stories that should be visible to all 
 - Tags should be lowercase and relevant
 - Keep story titles clear and descriptive
 - Be accurate with coordinates for the correct map location
+- Review your story for spelling and grammar before submitting
 
 ### Example Pull Request Workflow:
 
