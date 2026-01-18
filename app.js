@@ -1,11 +1,16 @@
-// Initialize the map
-const map = L.map('map').setView([20, 0], 2);
-
-// Add tile layer (OpenStreetMap)
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    maxZoom: 18,
-}).addTo(map);
+// Initialize the map (check if Leaflet is available)
+let map;
+if (typeof L !== 'undefined') {
+    map = L.map('map').setView([20, 0], 2);
+    
+    // Add tile layer (OpenStreetMap)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 18,
+    }).addTo(map);
+} else {
+    console.warn('Leaflet library not loaded. Map features will be disabled.');
+}
 
 // Helper function to escape HTML and prevent XSS
 function escapeHtml(text) {
@@ -58,6 +63,8 @@ function saveLocalStories() {
 
 // Add markers to the map
 function addMarkersToMap() {
+    if (!map) return; // Skip if map is not initialized
+    
     stories.forEach(story => {
         // Validate coordinates before creating marker
         if (typeof story.latitude !== 'number' || typeof story.longitude !== 'number' ||
@@ -254,18 +261,20 @@ previewLocalBtn.onclick = (e) => {
     saveLocalStories();
     
     // Add only the new marker to the map (more efficient)
-    const marker = L.marker([newStory.latitude, newStory.longitude]).addTo(map);
-    
-    const contentPreview = newStory.content.substring(0, 100) + (newStory.content.length > 100 ? '...' : '');
-    
-    marker.bindPopup(`
-        <h3>${escapeHtml(newStory.title)}</h3>
-        <p><strong>${escapeHtml(newStory.location)}</strong></p>
-        <p>${escapeHtml(contentPreview)}</p>
-    `);
-    marker.on('click', () => {
-        showStoryDetail(newStory);
-    });
+    if (map && typeof L !== 'undefined') {
+        const marker = L.marker([newStory.latitude, newStory.longitude]).addTo(map);
+        
+        const contentPreview = newStory.content.substring(0, 100) + (newStory.content.length > 100 ? '...' : '');
+        
+        marker.bindPopup(`
+            <h3>${escapeHtml(newStory.title)}</h3>
+            <p><strong>${escapeHtml(newStory.location)}</strong></p>
+            <p>${escapeHtml(contentPreview)}</p>
+        `);
+        marker.on('click', () => {
+            showStoryDetail(newStory);
+        });
+    }
     
     // Refresh the stories list
     displayStories();
@@ -275,7 +284,9 @@ previewLocalBtn.onclick = (e) => {
     storyForm.reset();
     
     // Pan to new story location
-    map.setView([newStory.latitude, newStory.longitude], 10);
+    if (map) {
+        map.setView([newStory.latitude, newStory.longitude], 10);
+    }
     
     alert('Story preview added locally! This is only visible in your browser.\n\nTo submit for publication, click "Write a Story" again and use "Submit for Review".');
 };
