@@ -59,12 +59,22 @@ function saveLocalStories() {
 // Add markers to the map
 function addMarkersToMap() {
     stories.forEach(story => {
+        // Validate coordinates before creating marker
+        if (typeof story.latitude !== 'number' || typeof story.longitude !== 'number' ||
+            isNaN(story.latitude) || isNaN(story.longitude)) {
+            console.warn('Skipping story with invalid coordinates:', story);
+            return;
+        }
+        
         const marker = L.marker([story.latitude, story.longitude]).addTo(map);
         
+        const content = story.content || '';
+        const contentPreview = content.substring(0, 100) + (content.length > 100 ? '...' : '');
+        
         marker.bindPopup(`
-            <h3>${escapeHtml(story.title)}</h3>
-            <p><strong>${escapeHtml(story.location)}</strong></p>
-            <p>${escapeHtml(story.content.substring(0, 100))}...</p>
+            <h3>${escapeHtml(story.title || 'Untitled')}</h3>
+            <p><strong>${escapeHtml(story.location || 'Unknown location')}</strong></p>
+            <p>${escapeHtml(contentPreview)}</p>
         `);
         
         marker.on('click', () => {
@@ -194,10 +204,13 @@ storyForm.onsubmit = (e) => {
     
     // Add only the new marker to the map (more efficient)
     const marker = L.marker([newStory.latitude, newStory.longitude]).addTo(map);
+    
+    const contentPreview = newStory.content.substring(0, 100) + (newStory.content.length > 100 ? '...' : '');
+    
     marker.bindPopup(`
         <h3>${escapeHtml(newStory.title)}</h3>
         <p><strong>${escapeHtml(newStory.location)}</strong></p>
-        <p>${escapeHtml(newStory.content.substring(0, 100))}...</p>
+        <p>${escapeHtml(contentPreview)}</p>
     `);
     marker.on('click', () => {
         showStoryDetail(newStory);
