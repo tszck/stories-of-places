@@ -35,7 +35,14 @@ async function loadStories() {
     // Load locally added stories from localStorage
     const savedLocalStories = localStorage.getItem('localStories');
     if (savedLocalStories) {
-        localStories = JSON.parse(savedLocalStories);
+        try {
+            localStories = JSON.parse(savedLocalStories);
+        } catch (error) {
+            console.error('Failed to parse localStorage data:', error);
+            localStories = [];
+            // Clear corrupted data
+            localStorage.removeItem('localStories');
+        }
     } else {
         localStories = [];
     }
@@ -83,16 +90,18 @@ function displayStories() {
         storyCard.className = 'story-card';
         storyCard.onclick = () => showStoryDetail(story);
         
-        const excerpt = story.content.substring(0, 150) + (story.content.length > 150 ? '...' : '');
+        const content = story.content || '';
+        const excerpt = content.substring(0, 150) + (content.length > 150 ? '...' : '');
+        const tags = story.tags || [];
         
         storyCard.innerHTML = `
-            <h3>${escapeHtml(story.title)}</h3>
-            <div class="location">📍 ${escapeHtml(story.location)}</div>
+            <h3>${escapeHtml(story.title || 'Untitled')}</h3>
+            <div class="location">📍 ${escapeHtml(story.location || 'Unknown location')}</div>
             <div class="excerpt">${escapeHtml(excerpt)}</div>
             <div class="tags">
-                ${story.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
+                ${tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
             </div>
-            <div class="meta">By ${escapeHtml(story.author)} on ${escapeHtml(story.date)}</div>
+            <div class="meta">By ${escapeHtml(story.author || 'Anonymous')} on ${escapeHtml(story.date || '')}</div>
         `;
         
         storiesList.appendChild(storyCard);
@@ -104,14 +113,16 @@ function showStoryDetail(story) {
     const modal = document.getElementById('storyDetailModal');
     const storyDetail = document.getElementById('storyDetail');
     
+    const tags = story.tags || [];
+    
     storyDetail.innerHTML = `
-        <h2>${escapeHtml(story.title)}</h2>
-        <div class="detail-location">📍 ${escapeHtml(story.location)}</div>
+        <h2>${escapeHtml(story.title || 'Untitled')}</h2>
+        <div class="detail-location">📍 ${escapeHtml(story.location || 'Unknown location')}</div>
         <div class="detail-tags">
-            ${story.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
+            ${tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
         </div>
-        <div class="detail-content">${escapeHtml(story.content)}</div>
-        <div class="detail-meta">Written by ${escapeHtml(story.author)} on ${escapeHtml(story.date)}</div>
+        <div class="detail-content">${escapeHtml(story.content || 'No content available')}</div>
+        <div class="detail-meta">Written by ${escapeHtml(story.author || 'Anonymous')} on ${escapeHtml(story.date || '')}</div>
     `;
     
     modal.style.display = 'block';
